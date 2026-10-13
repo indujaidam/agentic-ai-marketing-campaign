@@ -13,7 +13,6 @@ import {
   BarChart3,
   Sparkles,
   Upload,
-  ArrowLeft,
   Download
 } from 'lucide-react'
 import './index.css'
