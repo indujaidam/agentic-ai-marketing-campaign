@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Marketing Campaign System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5ff;
+            margin: 0;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #d5dced;
+        }
+
+        h1 {
+            color: #303f9f;
+            text-align: center;
+        }
+
+        p {
+            color: #555;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: #3949ab;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #283593;
+        }
+
+        button:disabled {
+            background: #9fa8da;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 25px;
+            padding: 18px;
+            background: #f7f8fc;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>AI Marketing Campaign System</h1>
+        <p>Generate marketing content with Artificial Intelligence</p>
+
+        <form id="campaignForm">
+            <label for="product">Product Name</label>
+            <input
+                id="product"
+                type="text"
+                placeholder="e.g. Smart Water Bottle"
+                required
+            >
+
+            <label for="audience">Target Audience</label>
+            <input
+                id="audience"
+                type="text"
+                placeholder="e.g. College students"
+                required
+            >
+
+            <label for="goal">Campaign Goal</label>
+            <textarea
+                id="goal"
+                rows="3"
+                placeholder="e.g. Increase product sales"
+                required
+            ></textarea>
+
+            <button type="submit" id="generateButton">
+                Generate Marketing Content
+            </button>
+        </form>
+
+        <div id="result">Your generated content will appear here.</div>
+
+        <button type="button" id="copyButton" disabled>
+            Copy Generated Content
+        </button>
+    </div>
+
+    <script>
+        const form = document.getElementById("campaignForm");
+        const result = document.getElementById("result");
+        const button = document.getElementById("generateButton");
+        const copyButton = document.getElementById("copyButton");
+
+        let generatedText = "";
+
+        form.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            button.disabled = true;
+            button.textContent = "Generating...";
+            copyButton.disabled = true;
+            copyButton.textContent = "Copy Generated Content";
+
+            result.textContent =
+                "Please wait while Gemini AI generates your content...";
+
+            const campaign = {
+                product_name: document.getElementById("product").value.trim(),
+                target_audience: document.getElementById("audience").value.trim(),
+                campaign_goal: document.getElementById("goal").value.trim()
+            };
+
+            try {
+                const response = await fetch(
+                    "http://127.0.0.1:8000/generate-content",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(campaign)
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail || "Unable to generate content."
+                    );
+                }
+
+                generatedText =
+                    "Product: " + data.product_name + "\n\n" +
+                    data.generated_content;
+
+                result.textContent = generatedText;
+                copyButton.disabled = false;
+
+            } catch (error) {
+                generatedText = "";
+                result.textContent = "Error: " + error.message;
+            } finally {
+                button.disabled = false;
+                button.textContent = "Generate Marketing Content";
+            }
+        });
+
+        copyButton.addEventListener("click", async function() {
+            try {
+                await navigator.clipboard.writeText(generatedText);
+                copyButton.textContent = "Copied Successfully!";
+            } catch (error) {
+                result.textContent =
+                    generatedText +
+                    "\n\nClipboard access failed. Select the generated text and copy it manually.";
+            }
+        });
+    </script>
+</body>
+</html>
